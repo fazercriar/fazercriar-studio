@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 106" data-nome="Estrela">
+  <title>Estrela</title>
+  <g id="contorno" fill="#C9A27E">
+    <polygon points="55,6 70.28,36.97 104.45,41.93 79.73,66.03 85.56,100.07 55,84 24.44,100.07 30.27,66.03 5.55,41.93 39.72,36.97"/>
+    <circle cx="55" cy="9" r="6.5"/>
+  </g>
+  <rect id="janela" x="32" y="46" width="46" height="16" rx="2" fill="#FFFFFF"/>
+  <g id="gravacao" fill="#5B3A1F">
+    <circle cx="55" cy="24" r="1.8"/>
+    <circle cx="92" cy="46" r="1.8"/>
+    <circle cx="18" cy="46" r="1.8"/>
+    <circle cx="74" cy="84" r="1.8"/>
+    <circle cx="36" cy="84" r="1.8"/>
+  </g>
+  <circle id="furo" cx="55" cy="9" r="2.6" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 118" data-nome="Bola clássica">
+  <title>Bola clássica</title>
+  <g id="contorno" fill="#C9A27E">
+    <circle cx="50" cy="66" r="50"/>
+    <rect x="38" y="8" width="24" height="14" rx="2"/>
+    <circle cx="50" cy="8" r="7"/>
+  </g>
+  <rect id="janela" x="10" y="50" width="80" height="32" rx="3" fill="#FFFFFF"/>
+  <g id="gravacao" fill="#5B3A1F">
+    <rect x="12" y="41" width="76" height="2.5" rx="1.25"/>
+    <rect x="12" y="88.5" width="76" height="2.5" rx="1.25"/>
+    <rect x="40" y="13" width="20" height="1.6"/>
+    <rect x="40" y="17" width="20" height="1.6"/>
+    <circle cx="34" cy="101" r="2.5"/>
+    <circle cx="50" cy="105" r="2.5"/>
+    <circle cx="66" cy="101" r="2.5"/>
+  </g>
+  <circle id="furo" cx="50" cy="8" r="3" fill="#FFFFFF"/>
+</svg>

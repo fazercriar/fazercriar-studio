@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 112" data-nome="Sino">
+  <title>Sino</title>
+  <g id="contorno" fill="#C9A27E">
+    <path d="M50 14 C30 14 24 30 22 50 C20 70 14 82 4 92 L4 98 L96 98 L96 92 C86 82 80 70 78 50 C76 30 70 14 50 14 Z"/>
+    <circle cx="50" cy="103" r="8"/>
+    <circle cx="50" cy="10" r="6.5"/>
+  </g>
+  <rect id="janela" x="27" y="62" width="46" height="18" rx="2" fill="#FFFFFF"/>
+  <g id="gravacao" fill="#5B3A1F">
+    <rect x="14" y="88" width="72" height="2.5" rx="1.25"/>
+    <circle cx="43" cy="26" r="2.2"/>
+    <circle cx="57" cy="26" r="2.2"/>
+  </g>
+  <circle id="furo" cx="50" cy="9.5" r="2.6" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" data-nome="Floco geométrico">
+  <title>Floco geométrico</title>
+  <g id="contorno" fill="#C9A27E">
+    <polygon points="100,56 75,99.3 25,99.3 0,56 25,12.7 75,12.7"/>
+    <circle cx="50" cy="8" r="6.5"/>
+    <rect x="46" y="8" width="8" height="7"/>
+  </g>
+  <rect id="janela" x="14" y="46" width="72" height="20" rx="2" fill="#FFFFFF"/>
+  <g id="recortes" fill="#FFFFFF">
+    <polygon points="34,25.5 37,30 34,34.5 31,30"/>
+    <polygon points="50,21.5 53,26 50,30.5 47,26"/>
+    <polygon points="66,25.5 69,30 66,34.5 63,30"/>
+    <polygon points="34,77.5 37,82 34,86.5 31,82"/>
+    <polygon points="50,81.5 53,86 50,90.5 47,86"/>
+    <polygon points="66,77.5 69,82 66,86.5 63,82"/>
+  </g>
+  <g id="gravacao" fill="#5B3A1F">
+    <path fill-rule="evenodd" d="M95 56 L72.5 94.97 L27.5 94.97 L5 56 L27.5 17.03 L72.5 17.03 Z M92.5 56 L71.25 92.81 L28.75 92.81 L7.5 56 L28.75 19.19 L71.25 19.19 Z"/>
+  </g>
+  <circle id="furo" cx="50" cy="8" r="2.6" fill="#FFFFFF"/>
+</svg>

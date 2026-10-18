@@ -1,0 +1,49 @@
+{
+  "name": "fazercriar-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FazerCriar Studio — criação paramétrica de produtos para corte e gravação a laser",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "build:artifact": "tsc && vite build && node scripts/artifact-page.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@types/clipper-lib": "^6.4.0",
+    "@types/node": "^26.6.5",
+    "@types/opentype.js": "^1.3.10",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "happy-dom": "^21.0.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/baloo-2": "^5.3.0",
+    "@fontsource/bebas-neue": "^5.3.0",
+    "@fontsource/fredoka": "^5.3.0",
+    "@fontsource/great-vibes": "^5.3.0",
+    "@fontsource/lilita-one": "^5.3.0",
+    "@fontsource/lobster": "^5.3.0",
+    "@fontsource/montserrat": "^5.3.0",
+    "@fontsource/pacifico": "^5.3.0",
+    "@fontsource/righteous": "^5.3.0",
+    "clipper-lib": "^6.4.2",
+    "dxf-parser": "^1.1.2",
+    "earcut": "^3.2.4",
+    "jszip": "^3.10.2",
+    "lucide-react": "^1.59.0",
+    "opentype.js": "^2.0.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "svgpath": "^2.6.0"
+  }
+}
