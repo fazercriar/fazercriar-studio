@@ -15,7 +15,10 @@ const SIDE_OVERLAP = 1.0;
 /** No modo "em cima e embaixo", quanto as letras entram na moldura acima e abaixo da faixa (mm). */
 const FILL_OVERLAP = 1.0;
 const MIN_SCALE_X = 0.65;
+/** Abaixo disso o modo "em cima e embaixo" avisa que as letras ficaram estreitas. */
 const MIN_SCALE_X_FILL = 0.5;
+/** Limite absoluto de estreitamento; além dele o nome passa das laterais e é cortado pela janela. */
+const MIN_SCALE_X_FILL_ABS = 0.2;
 const MAX_SCALE_X = 1.6;
 const MIN_CAP = 4;
 /** Recortes internos menores que isso são preenchidos (mm). */
@@ -108,15 +111,17 @@ export const enfeiteNatal: ModelDefinition = {
       const lateral = p.ligacao === 'todos' || (!fill && p.ajuste === 'laterais');
       const avail = lateral ? jb.w + 2 * SIDE_OVERLAP : jb.w - 4;
       let sx = lateral ? avail / natural : Math.min(1, avail / natural);
-      // Com a altura presa à faixa, aceita letras mais estreitas antes de reduzir a altura.
-      const minSx = fill ? MIN_SCALE_X_FILL : MIN_SCALE_X;
-      if (sx < minSx) {
-        // Nem condensando cabe: reduz a altura.
-        cap *= avail / (natural * minSx);
-        sx = minSx;
-        if (fill) {
-          issues.push({ level: 'warning', code: 'TEXT_TOO_LONG', message: 'O nome é longo demais para encostar em cima e embaixo: as letras foram reduzidas e ficam presas só pela base. Aumente a largura ou use um nome menor.' });
+      if (fill) {
+        // A altura fica presa à faixa (é ela que liga o nome em cima e embaixo):
+        // se não couber, as letras ficam mais estreitas, nunca mais baixas.
+        if (sx < MIN_SCALE_X_FILL) {
+          issues.push({ level: 'warning', code: 'TEXT_TOO_LONG', message: `As letras ficaram estreitas (${Math.round(sx * 100)}% da largura normal) para caber com a altura toda. Para letras mais largas, aumente a largura do enfeite ou use uma fonte estreita (Anton, Bebas Neue).` });
         }
+        sx = Math.max(sx, MIN_SCALE_X_FILL_ABS);
+      } else if (sx < MIN_SCALE_X) {
+        // Nem condensando cabe: reduz a altura.
+        cap *= avail / (natural * MIN_SCALE_X);
+        sx = MIN_SCALE_X;
       }
       sx = Math.min(sx, MAX_SCALE_X);
       if (cap < MIN_CAP) {

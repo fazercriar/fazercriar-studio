@@ -109,6 +109,15 @@ describe('Enfeite de Natal', () => {
     expect(o.issues.map((i) => i.code)).toContain('TEXT_TOO_LONG');
   });
 
+  it('em cima e embaixo nunca reduz a altura (caso relatado: 50 mm, Fredoka, HELENA)', () => {
+    // Bola com 50 mm: janela com 32 × 0,5 = 16 mm de altura.
+    for (const ligacao of ['cima-baixo', 'todos']) {
+      const { box, out } = lettersBox({ nome: 'Helena', maiusculas: true, fonte: 'fredoka', largura: 50, ligacao });
+      expect(errors(out), ligacao).toEqual([]);
+      expect(box.h, ligacao).toBeGreaterThan(16 - 0.2);
+    }
+  });
+
   it('ligação "cima, embaixo e laterais": letras também encostam nos lados', () => {
     const { box, out } = lettersBox({ nome: 'ANA', ligacao: 'todos' });
     expect(errors(out)).toEqual([]);
