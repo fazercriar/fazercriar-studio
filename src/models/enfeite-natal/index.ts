@@ -12,7 +12,10 @@ import { framePreview } from '../../core/frames';
 const FLOOR_OVERLAP = 1.0;
 /** Quanto o texto pode avançar além da janela quando encosta nas laterais (mm). */
 const SIDE_OVERLAP = 1.0;
+/** No modo "em cima e embaixo", quanto as letras entram na moldura acima e abaixo da faixa (mm). */
+const FILL_OVERLAP = 1.0;
 const MIN_SCALE_X = 0.65;
+const MIN_SCALE_X_FILL = 0.5;
 const MAX_SCALE_X = 1.6;
 const MIN_CAP = 4;
 /** Recortes internos menores que isso são preenchidos (mm). */
@@ -32,15 +35,25 @@ export const enfeiteNatal: ModelDefinition = {
       source: (ctx) => ctx.frames.list().map((f) => ({ value: f.id, label: f.name, preview: framePreview(f) })),
     },
     { id: 'nome', type: 'text', label: 'Nome ou texto', group: 'Texto', default: 'Helena', maxLength: 24, placeholder: 'Digite o nome' },
+    { id: 'maiusculas', type: 'boolean', label: 'Tudo em MAIÚSCULAS', group: 'Texto', default: false },
     { id: 'fonte', type: 'font', label: 'Fonte', group: 'Texto', default: 'lilita' },
     {
-      id: 'ajuste', type: 'select', label: 'Encaixe do nome', group: 'Texto', default: 'centro', display: 'buttons',
+      id: 'ligacao', type: 'select', label: 'Como o nome se liga à moldura', group: 'Ligação do nome', default: 'base', display: 'buttons',
+      help: 'Em cima e embaixo: as letras ocupam toda a altura da faixa (fica melhor em MAIÚSCULAS).',
+      options: [
+        { value: 'base', label: 'Na base (hastes)' },
+        { value: 'cima-baixo', label: 'Em cima e embaixo' },
+        { value: 'todos', label: 'Cima, embaixo e laterais' },
+      ],
+    },
+    {
+      id: 'ajuste', type: 'select', label: 'Encaixe do nome', group: 'Ligação do nome', default: 'centro', display: 'buttons',
       options: [
         { value: 'centro', label: 'Centralizado' },
         { value: 'laterais', label: 'Encostar nas laterais' },
       ],
     },
-    { id: 'alturaTexto', type: 'number', label: 'Altura das letras', group: 'Texto', default: 80, min: 40, max: 100, step: 1, unit: '% da janela' },
+    { id: 'alturaTexto', type: 'number', label: 'Altura das letras', group: 'Ligação do nome', default: 80, min: 40, max: 100, step: 1, unit: '% da janela' },
     { id: 'espacamento', type: 'number', label: 'Espaço entre letras', group: 'Texto', default: 0, min: -3, max: 5, step: 0.1, unit: 'mm' },
     { id: 'deslocX', type: 'number', label: 'Mover para os lados', group: 'Posição do nome', default: 0, min: -40, max: 40, step: 0.5, unit: 'mm', pad: 'x', help: 'Positivo vai para a direita.' },
     { id: 'deslocY', type: 'number', label: 'Mover para cima/baixo', group: 'Posição do nome', default: 0, min: -40, max: 40, step: 0.5, unit: 'mm', pad: 'y', help: 'Positivo sobe. Se o nome sair da base, as pontes ligam as letras.' },
@@ -51,6 +64,8 @@ export const enfeiteNatal: ModelDefinition = {
   ],
   visibleWhen: {
     larguraPonte: (p) => p.pontes === true,
+    ajuste: (p) => p.ligacao === 'base',
+    alturaTexto: (p) => p.ligacao === 'base',
   },
 
   generate(p, ctx): GeometryResult {
@@ -71,7 +86,7 @@ export const enfeiteNatal: ModelDefinition = {
 
     const ring = difference(contorno, union(janela, recortes));
     let text: Shape = [];
-    const nome = String(p.nome).trim();
+    const nome = p.maiusculas ? String(p.nome).trim().toLocaleUpperCase('pt-BR') : String(p.nome).trim();
     const font = ctx.fonts.get(String(p.fonte));
 
     if (!font) {
@@ -83,25 +98,34 @@ export const enfeiteNatal: ModelDefinition = {
       if (missing.length) {
         issues.push({ level: 'error', code: 'MISSING_GLYPH', message: `A fonte escolhida não tem: ${missing.join(' ')}` });
       }
-      let cap = (jb.h * Number(p.alturaTexto)) / 100;
+      // Ligação: "base" = letras em pé na base da janela; "cima-baixo"/"todos" = letras com a
+      // altura da faixa inteira, entrando um pouco na moldura em cima e embaixo.
+      const fill = p.ligacao === 'cima-baixo' || p.ligacao === 'todos';
+      const capWanted = fill ? jb.h + 2 * FILL_OVERLAP : (jb.h * Number(p.alturaTexto)) / 100;
+      let cap = capWanted;
       const spacing = Number(p.espacamento);
       const natural = textToShape({ font, text: nome, capHeight: cap, letterSpacing: spacing }).bounds.w;
-      const lateral = p.ajuste === 'laterais';
+      const lateral = p.ligacao === 'todos' || (!fill && p.ajuste === 'laterais');
       const avail = lateral ? jb.w + 2 * SIDE_OVERLAP : jb.w - 4;
       let sx = lateral ? avail / natural : Math.min(1, avail / natural);
-      if (sx < MIN_SCALE_X) {
+      // Com a altura presa à faixa, aceita letras mais estreitas antes de reduzir a altura.
+      const minSx = fill ? MIN_SCALE_X_FILL : MIN_SCALE_X;
+      if (sx < minSx) {
         // Nem condensando cabe: reduz a altura.
-        cap *= avail / (natural * MIN_SCALE_X);
-        sx = MIN_SCALE_X;
+        cap *= avail / (natural * minSx);
+        sx = minSx;
+        if (fill) {
+          issues.push({ level: 'warning', code: 'TEXT_TOO_LONG', message: 'O nome é longo demais para encostar em cima e embaixo: as letras foram reduzidas e ficam presas só pela base. Aumente a largura ou use um nome menor.' });
+        }
       }
       sx = Math.min(sx, MAX_SCALE_X);
       if (cap < MIN_CAP) {
         issues.push({ level: 'warning', code: 'TEXT_TOO_SMALL', message: `O texto ficou com ${cap.toFixed(1)} mm de altura. Use um nome menor ou aumente a largura.` });
       }
-      const t = textToShape({ font, text: nome, capHeight: cap, letterSpacing: spacing * (cap / ((jb.h * Number(p.alturaTexto)) / 100)), scaleX: sx });
+      const t = textToShape({ font, text: nome, capHeight: cap, letterSpacing: spacing * (cap / capWanted), scaleX: sx });
       // Deslocamento manual: X positivo para a direita, Y positivo para cima (Y da tela cresce para baixo).
       const x = jb.x + (jb.w - t.bounds.w) / 2 - t.bounds.x + Number(p.deslocX);
-      const baseline = jb.y + jb.h + FLOOR_OVERLAP - Number(p.deslocY);
+      const baseline = jb.y + jb.h + (fill ? FILL_OVERLAP : FLOOR_OVERLAP) - Number(p.deslocY);
       text = intersection(translate(t.shape, x, baseline), offset(janela, SIDE_OVERLAP));
     }
 

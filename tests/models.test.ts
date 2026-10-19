@@ -86,6 +86,47 @@ describe('Enfeite de Natal', () => {
     expect(c.y - u.y).toBeCloseTo(3, 1);
   });
 
+  const lettersBox = (over: Record<string, string | number | boolean>) => {
+    const o = run('enfeite-natal', { moldura: 'bola', ...over });
+    const base = run('enfeite-natal', { moldura: 'bola', ...over, nome: '' });
+    return { box: bounds(difference(o.result.parts[0].solid, base.result.parts[0].solid)), out: o };
+  };
+  // Na bola com 90 mm, a janela tem 76 × 32 unidades × 0,9 = 72 × 28,8 mm.
+  const JANELA = { w: 80 * 0.9, h: 32 * 0.9 };
+
+  it('ligação "em cima e embaixo": letras ocupam toda a altura da faixa', () => {
+    const { box, out } = lettersBox({ nome: 'HELENA', fonte: 'anton', ligacao: 'cima-baixo' });
+    expect(errors(out)).toEqual([]);
+    expect(out.issues.map((i) => i.code)).not.toContain('TEXT_TOO_LONG');
+    expect(box.h).toBeGreaterThan(JANELA.h - 0.2);
+    // modo base com 80 % fica bem mais baixo
+    expect(lettersBox({ nome: 'HELENA', fonte: 'anton', ligacao: 'base' }).box.h).toBeLessThan(JANELA.h * 0.9);
+  });
+
+  it('nome longo demais para a altura toda gera aviso, não erro', () => {
+    const o = run('enfeite-natal', { moldura: 'bola', nome: 'MARIA EDUARDA', fonte: 'lilita', ligacao: 'cima-baixo' });
+    expect(errors(o)).toEqual([]);
+    expect(o.issues.map((i) => i.code)).toContain('TEXT_TOO_LONG');
+  });
+
+  it('ligação "cima, embaixo e laterais": letras também encostam nos lados', () => {
+    const { box, out } = lettersBox({ nome: 'ANA', ligacao: 'todos' });
+    expect(errors(out)).toEqual([]);
+    expect(box.w).toBeGreaterThan(JANELA.w - 1);
+  });
+
+  it('forma peça única em todas as molduras nos novos modos', () => {
+    for (const moldura of ctx.frames.list().map((f) => f.id)) {
+      for (const ligacao of ['cima-baixo', 'todos']) {
+        expect(errors(run('enfeite-natal', { moldura, ligacao, nome: 'Helena', maiusculas: true })), `${moldura}/${ligacao}`).toEqual([]);
+      }
+    }
+  });
+
+  it('MAIÚSCULAS converte acentos corretamente', () => {
+    expect(errors(run('enfeite-natal', { nome: 'joão', maiusculas: true, ligacao: 'cima-baixo' }))).toEqual([]);
+  });
+
   it('nome erguido acima da base continua peça única com pontes', () => {
     const o = run('enfeite-natal', { moldura: 'bola', nome: 'Ana', deslocY: 4, pontes: true });
     expect(errors(o)).toEqual([]);

@@ -167,6 +167,7 @@ function Field({ def, value, ctx, sample, onChange }: { def: ParamDef; value: Pa
                 </button>
               ))}
             </div>
+            {def.help && <p className="help">{def.help}</p>}
           </div>
         );
       }
