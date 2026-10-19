@@ -42,6 +42,8 @@ export const enfeiteNatal: ModelDefinition = {
     },
     { id: 'alturaTexto', type: 'number', label: 'Altura das letras', group: 'Texto', default: 80, min: 40, max: 100, step: 1, unit: '% da janela' },
     { id: 'espacamento', type: 'number', label: 'Espaço entre letras', group: 'Texto', default: 0, min: -3, max: 5, step: 0.1, unit: 'mm' },
+    { id: 'deslocX', type: 'number', label: 'Mover para os lados', group: 'Posição do nome', default: 0, min: -40, max: 40, step: 0.5, unit: 'mm', pad: 'x', help: 'Positivo vai para a direita.' },
+    { id: 'deslocY', type: 'number', label: 'Mover para cima/baixo', group: 'Posição do nome', default: 0, min: -40, max: 40, step: 0.5, unit: 'mm', pad: 'y', help: 'Positivo sobe. Se o nome sair da base, as pontes ligam as letras.' },
     { id: 'largura', type: 'number', label: 'Largura final', group: 'Dimensões', default: 90, min: 50, max: 300, step: 1, unit: 'mm', help: 'A altura acompanha proporcionalmente.' },
     { id: 'furo', type: 'boolean', label: 'Furo para pendurar', group: 'Detalhes', default: true },
     { id: 'pontes', type: 'boolean', label: 'Ligar acentos e pingos automaticamente', group: 'Detalhes', default: true },
@@ -97,8 +99,9 @@ export const enfeiteNatal: ModelDefinition = {
         issues.push({ level: 'warning', code: 'TEXT_TOO_SMALL', message: `O texto ficou com ${cap.toFixed(1)} mm de altura. Use um nome menor ou aumente a largura.` });
       }
       const t = textToShape({ font, text: nome, capHeight: cap, letterSpacing: spacing * (cap / ((jb.h * Number(p.alturaTexto)) / 100)), scaleX: sx });
-      const x = jb.x + (jb.w - t.bounds.w) / 2 - t.bounds.x;
-      const baseline = jb.y + jb.h + FLOOR_OVERLAP;
+      // Deslocamento manual: X positivo para a direita, Y positivo para cima (Y da tela cresce para baixo).
+      const x = jb.x + (jb.w - t.bounds.w) / 2 - t.bounds.x + Number(p.deslocX);
+      const baseline = jb.y + jb.h + FLOOR_OVERLAP - Number(p.deslocY);
       text = intersection(translate(t.shape, x, baseline), offset(janela, SIDE_OVERLAP));
     }
 

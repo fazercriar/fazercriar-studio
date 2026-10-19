@@ -1,7 +1,7 @@
 // Painel de propriedades gerado automaticamente a partir dos parâmetros do modelo.
 
-import { useState } from 'react';
-import { ChevronDown, RotateCcw } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, Crosshair, RotateCcw } from 'lucide-react';
 import type { GenContext, ModelDefinition, ParamDef, ParamValue, Params } from '../../core/types';
 import { isVisible, selectOptions } from '../../core/run';
 import { ShapeThumb } from './ShapeThumb';
@@ -29,6 +29,7 @@ export function ParamPanel({ model, params, ctx, onChange, onReset }: Props) {
     <div className="params">
       {groups.map((g) => (
         <Group key={g.name} title={g.name}>
+          <NudgePad defs={g.defs} params={params} onChange={onChange} />
           {g.defs.map((def) => (
             <Field key={def.id} def={def} value={params[def.id]} ctx={ctx} sample={sample} onChange={(v) => onChange(def.id, v)} />
           ))}
@@ -37,6 +38,46 @@ export function ParamPanel({ model, params, ctx, onChange, onReset }: Props) {
       <button className="btn btn-ghost btn-sm params-reset" onClick={onReset}>
         <RotateCcw size={14} /> Restaurar padrão
       </button>
+    </div>
+  );
+}
+
+type NumberDef = ParamDef & { type: 'number' };
+
+/** Setas para deslocar (1 mm por clique, 5 mm com Shift) e botão para centralizar. */
+function NudgePad({ defs, params, onChange }: { defs: ParamDef[]; params: Params; onChange: (id: string, v: ParamValue) => void }) {
+  const xd = defs.find((d): d is NumberDef => d.type === 'number' && d.pad === 'x');
+  const yd = defs.find((d): d is NumberDef => d.type === 'number' && d.pad === 'y');
+  // Guarda o valor mais recente para cliques rápidos seguidos não se perderem.
+  const latest = useRef<Record<string, number>>({});
+  if (!xd || !yd) return null;
+  const x = Number(params[xd.id]), y = Number(params[yd.id]);
+  latest.current = { [xd.id]: x, [yd.id]: y };
+  const move = (def: NumberDef, _cur: number, dir: number) => (e: React.MouseEvent) => {
+    const cur = latest.current[def.id] ?? 0;
+    const v = Math.min(def.max, Math.max(def.min, Math.round((cur + dir * (e.shiftKey ? 5 : 1)) * 100) / 100));
+    latest.current[def.id] = v;
+    onChange(def.id, v);
+  };
+  const fmt = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return (
+    <div className="nudge">
+      <div className="nudge-pad" role="group" aria-label="Mover o nome">
+        <span />
+        <button onClick={move(yd, y, 1)} aria-label="Mover para cima" title="Para cima (Shift: 5 mm)"><ArrowUp size={16} /></button>
+        <span />
+        <button onClick={move(xd, x, -1)} aria-label="Mover para a esquerda" title="Para a esquerda (Shift: 5 mm)"><ArrowLeft size={16} /></button>
+        <button onClick={() => { onChange(xd.id, 0); onChange(yd.id, 0); }} aria-label="Centralizar" title="Voltar ao centro"><Crosshair size={16} /></button>
+        <button onClick={move(xd, x, 1)} aria-label="Mover para a direita" title="Para a direita (Shift: 5 mm)"><ArrowRight size={16} /></button>
+        <span />
+        <button onClick={move(yd, y, -1)} aria-label="Mover para baixo" title="Para baixo (Shift: 5 mm)"><ArrowDown size={16} /></button>
+        <span />
+      </div>
+      <div className="nudge-info">
+        <span>Lados: <strong>{fmt(x)} mm</strong></span>
+        <span>Altura: <strong>{fmt(y)} mm</strong></span>
+        <span className="help">1 mm por clique · Shift + clique: 5 mm</span>
+      </div>
     </div>
   );
 }

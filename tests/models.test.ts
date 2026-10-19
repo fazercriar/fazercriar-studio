@@ -3,7 +3,7 @@ import { MODELS, getModel } from '../src/models/registry';
 import { defaultParams, runModel } from '../src/core/run';
 import { prepareForExport } from '../src/core/export/prepare';
 import { buildSvg } from '../src/core/export/svg';
-import { bounds } from '../src/core/geometry/clip';
+import { bounds, difference } from '../src/core/geometry/clip';
 import type { Params } from '../src/core/types';
 import { COLORS, MACHINE, MDF3, testContext } from './helpers';
 
@@ -69,6 +69,27 @@ describe('Enfeite de Natal', () => {
     for (const largura of [50, 90, 200]) {
       expect(run('enfeite-natal', { largura }).bounds.w).toBeCloseTo(largura, 1);
     }
+  });
+
+  it('desloca o nome para os lados e para cima/baixo', () => {
+    const textBox = (over: Record<string, number>) => {
+      const o = run('enfeite-natal', { moldura: 'bola', nome: 'Ana', ...over });
+      const base = run('enfeite-natal', { moldura: 'bola', nome: '', ...over });
+      // A diferença entre "com nome" e "sem nome" é o material das letras.
+      const letters = difference(o.result.parts[0].solid, base.result.parts[0].solid);
+      return bounds(letters);
+    };
+    const c = textBox({});
+    const r = textBox({ deslocX: 5 });
+    const u = textBox({ deslocY: 3 });
+    expect(r.x - c.x).toBeCloseTo(5, 1);
+    expect(c.y - u.y).toBeCloseTo(3, 1);
+  });
+
+  it('nome erguido acima da base continua peça única com pontes', () => {
+    const o = run('enfeite-natal', { moldura: 'bola', nome: 'Ana', deslocY: 4, pontes: true });
+    expect(errors(o)).toEqual([]);
+    expect(errors(run('enfeite-natal', { moldura: 'bola', nome: 'Ana', deslocY: 4, pontes: false }))).toContain('DISCONNECTED_PART');
   });
 
   it('acusa erro para caractere fora da fonte', () => {

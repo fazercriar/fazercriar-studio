@@ -78,7 +78,11 @@ interface ParamBase {
 
 export type ParamDef =
   | (ParamBase & { type: 'text'; default: string; maxLength?: number; placeholder?: string })
-  | (ParamBase & { type: 'number'; default: number; min: number; max: number; step?: number; unit?: string })
+  | (ParamBase & {
+      type: 'number'; default: number; min: number; max: number; step?: number; unit?: string;
+      /** Dois números do mesmo grupo com pad 'x' e 'y' ganham um controle de setas (deslocamento). */
+      pad?: 'x' | 'y';
+    })
   | (ParamBase & { type: 'select'; default: string; options?: SelectOption[]; source?: (ctx: GenContext) => SelectOption[]; display?: 'list' | 'tiles' | 'buttons' })
   | (ParamBase & { type: 'boolean'; default: boolean })
   | (ParamBase & { type: 'font'; default: string });
